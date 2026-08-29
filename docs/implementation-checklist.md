@@ -72,8 +72,7 @@ cerrada.
 - [x] `docs/api/openapi.yaml` alineado con los contratos
 - [x] CHANGELOG al día
 - [x] `php artisan test` en verde
-- [ ] Cobertura verificada — **bloqueado**: la maquina de desarrollo no tiene Xdebug ni PCOV.
-      `php artisan test --coverage` no puede ejecutarse. Se mide en CI.
+- [x] Cobertura verificada con Xdebug 3.5.3: **94.4%** global, `app/Domain/` por encima del 90%
 - [x] Rama `feat/p7-ecommerce-mvp` con 9 commits atomicos y cuerpo del PR en `docs/PULL_REQUEST.md`
 - [ ] Push (fuera de clase, requiere aprobación)
 

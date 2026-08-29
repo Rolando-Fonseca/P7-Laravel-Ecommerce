@@ -128,7 +128,7 @@ final class ProductQueryService
 
         $query->where(function (Builder $q) use ($term): void {
             $q->whereRaw('LOWER(name) LIKE ?', [$term])
-                ->orWhereRaw('LOWER(COALESCE(description, "")) LIKE ?', [$term]);
+                ->orWhereRaw("LOWER(COALESCE(description, '')) LIKE ?", [$term]);
         });
     }
 

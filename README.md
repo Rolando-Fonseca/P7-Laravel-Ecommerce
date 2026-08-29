@@ -122,8 +122,8 @@ en el almacén, la unidad existe: está reservada, no vendida.
 | Laravel | 12.68 |
 | Endpoints | 18, todos implementados |
 | Tablas | 12 |
-| Tests | 65 en verde, 264 aserciones |
-| Cobertura medida | **Pendiente**: requiere Xdebug o PCOV, no instalados |
+| Tests | 80 en verde, 340 aserciones |
+| Cobertura de lineas | **94.4%** global, `app/Domain/` por encima del 90% (umbral: 70% / 85%) |
 
 ---
 

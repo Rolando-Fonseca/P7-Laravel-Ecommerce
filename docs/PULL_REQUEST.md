@@ -12,9 +12,10 @@ ropa masculina: catálogo, inventario, carrito y pedidos. Sin pagos, a propósit
 | Laravel | 12.68 |
 | Endpoints | 18, todos implementados |
 | Tablas | 12 |
-| Tests | 65 en verde, 264 aserciones |
+| Tests | 80 en verde, 340 aserciones |
+| Cobertura | 94.4% global, `app/Domain/` > 90% |
 | ADRs | 10, todas aceptadas |
-| Commits | 9 atómicos |
+| Commits | 11 atómicos |
 
 ## Las cuatro decisiones que hay que revisar
 
@@ -69,7 +70,6 @@ listar → añadir al carrito → crear pedido → consultar pedido.
 
 | Tarea | ADR | Por qué no está |
 |---|---|---|
-| Cobertura medida | — | **Bloqueado**: la máquina de desarrollo no tiene Xdebug ni PCOV |
 | Batería de concurrencia contra MySQL | 0010 | SQLite no bloquea filas; esos tests darían verde sin probar nada |
 | Purga de `idempotency_keys` a 24 h | 0004 | Requiere planificador |
 | Métrica `orders.insufficient_stock_rate` | 0005 | Es la señal que dispara la revisión de ADR-0005 |

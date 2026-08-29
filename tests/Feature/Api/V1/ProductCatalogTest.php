@@ -150,4 +150,82 @@ class ProductCatalogTest extends TestCase
             ->assertJsonPath('data.0.slug', $categorySlug)
             ->assertJsonPath('data.0.product_count', 1);
     }
+
+    public function test_el_detalle_de_variante_devuelve_el_stock_por_almacen(): void
+    {
+        $variant = $this->variantWithStock(onHand: 9, reserved: 2, variantAttributes: [
+            'sku' => 'NGL-CAM-OXF-AZC-M',
+            'size' => 'M',
+            'color_name' => 'Azul cielo',
+        ]);
+
+        $this->getJson("/api/v1/products/{$variant->product->slug}/variants/NGL-CAM-OXF-AZC-M")
+            ->assertOk()
+            ->assertJsonPath('data.sku', 'NGL-CAM-OXF-AZC-M')
+            ->assertJsonPath('data.color.name', 'Azul cielo')
+            ->assertJsonPath('data.stock.available', 7)
+            ->assertJsonPath('data.stock.by_warehouse.0.warehouse_code', 'NGL-CEN');
+    }
+
+    public function test_una_variante_que_no_pertenece_a_ese_producto_devuelve_404(): void
+    {
+        $uno = $this->variantWithStock(variantAttributes: ['sku' => 'NGL-AAA-BBB-CCC-M']);
+        $otro = $this->variantWithStock(variantAttributes: ['sku' => 'NGL-XXX-YYY-ZZZ-L']);
+
+        $this->getJson("/api/v1/products/{$uno->product->slug}/variants/NGL-XXX-YYY-ZZZ-L")
+            ->assertStatus(404);
+    }
+
+    public function test_el_filtro_por_talla_acepta_varios_valores_separados_por_coma(): void
+    {
+        $this->variantWithStock(variantAttributes: ['size' => 'M']);
+        $this->variantWithStock(variantAttributes: ['size' => 'XXL']);
+
+        $this->getJson('/api/v1/products?size=M')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/products?size=M,XXL')->assertOk()->assertJsonCount(2, 'data');
+        $this->getJson('/api/v1/products?size=XS')->assertOk()->assertJsonCount(0, 'data');
+    }
+
+    public function test_el_filtro_por_color_ignora_mayusculas(): void
+    {
+        $this->variantWithStock(variantAttributes: ['color_name' => 'Azul cielo']);
+        $this->variantWithStock(variantAttributes: ['color_name' => 'Verde oliva']);
+
+        $this->getJson('/api/v1/products?color=AZUL')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/products?color=azul,verde')->assertOk()->assertJsonCount(2, 'data');
+    }
+
+    public function test_la_busqueda_encuentra_por_nombre_y_por_descripcion(): void
+    {
+        $this->variantWithStock(productAttributes: [
+            'name' => 'Camisa Oxford Manga Larga',
+            'description' => 'Tejido de algodon peinado.',
+        ]);
+        $this->variantWithStock(productAttributes: [
+            'name' => 'Bota Chelsea',
+            'description' => 'Cuero curtido al vegetal con suela cosida.',
+        ]);
+
+        $this->getJson('/api/v1/products?q=oxford')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/products?q=vegetal')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/products?q=nailon')->assertOk()->assertJsonCount(0, 'data');
+    }
+
+    public function test_una_busqueda_de_un_solo_caracter_devuelve_422(): void
+    {
+        // Recorre la tabla entera para devolver casi todo. ADR-0009.
+        $this->getJson('/api/v1/products?q=a')->assertStatus(422);
+    }
+
+    public function test_el_orden_por_precio_ascendente_y_descendente(): void
+    {
+        $this->variantWithStock(productAttributes: ['name' => 'Barato', 'base_price_cents' => 500_000]);
+        $this->variantWithStock(productAttributes: ['name' => 'Caro', 'base_price_cents' => 9_000_000]);
+
+        $this->getJson('/api/v1/products?sort=price')
+            ->assertOk()->assertJsonPath('data.0.name', 'Barato');
+
+        $this->getJson('/api/v1/products?sort=-price')
+            ->assertOk()->assertJsonPath('data.0.name', 'Caro');
+    }
 }

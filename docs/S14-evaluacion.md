@@ -173,5 +173,5 @@ de inventario, y por eso tiene su propio test:
 | 6 | PR preparado (push fuera de clase) | Rama y commits listos |
 
 **Extra sobre lo pedido:** el backend está implementado y funcionando, no solo andamiado.
-65 tests en verde sobre Laravel 12.68 con las 12 tablas migradas y el catálogo de Nogal
-sembrado.
+80 tests en verde y 94.4% de cobertura sobre Laravel 12.68, con las 12 tablas migradas y el
+catálogo de Nogal sembrado.

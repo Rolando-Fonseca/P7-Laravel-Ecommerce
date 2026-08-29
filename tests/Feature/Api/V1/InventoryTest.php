@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1;
 
+use App\Enums\MovementType;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\User;
@@ -216,7 +217,10 @@ class InventoryTest extends TestCase
 
         $item = InventoryItem::first();
         $sum = InventoryMovement::where('inventory_item_id', $item->id)
-            ->whereIn('type', ['adjustment', 'sale', 'return'])
+            ->whereIn('type', array_map(
+                fn (MovementType $t): string => $t->value,
+                array_filter(MovementType::cases(), fn (MovementType $t): bool => $t->affectsOnHand())
+            ))
             ->sum('quantity_delta');
 
         $this->assertSame(12, $item->quantity_on_hand);
