@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Menu, X, Search, ShoppingBag } from "lucide-react";
+import { useCart } from "./cart/cart-context";
 
 const links = [
   { href: "#coleccion", label: "Colección" },
@@ -12,6 +13,7 @@ const links = [
 
 export function SiteNav() {
   const [open, setOpen] = useState(false);
+  const { itemCount, setOpen: setCartOpen } = useCart();
 
   return (
     <header className="sticky top-0 z-50 border-b border-line-soft bg-background/85 backdrop-blur-md">
@@ -50,13 +52,16 @@ export function SiteNav() {
 
           <button
             type="button"
-            aria-label="Ver el carrito, 0 artículos"
+            onClick={() => setCartOpen(true)}
+            aria-label={`Ver el carrito, ${itemCount} ${itemCount === 1 ? "unidad" : "unidades"}`}
             className="press relative grid h-11 w-11 place-items-center rounded-full text-muted hover:bg-surface hover:text-nogal"
           >
             <ShoppingBag size={18} strokeWidth={1.6} aria-hidden />
-            <span className="tabular absolute right-1 top-1 grid h-4 w-4 place-items-center rounded-full bg-caramel text-[10px] font-semibold text-ink">
-              0
-            </span>
+            {itemCount > 0 && (
+              <span className="tabular absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-caramel px-1 text-[10px] font-semibold text-ink">
+                {itemCount}
+              </span>
+            )}
           </button>
 
           <button

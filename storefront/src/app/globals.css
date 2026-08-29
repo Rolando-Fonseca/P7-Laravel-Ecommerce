@@ -93,6 +93,17 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* Panel del carrito. La salida corre al 75% de la entrada: cerrar debe sentirse
+   más rápido que abrir. */
+.drawer-fade {
+  transition-property: opacity;
+  transition-timing-function: var(--ease-out);
+}
+.drawer-panel {
+  transition-property: transform, opacity;
+  transition-timing-function: var(--ease-out);
+}
+
 /* Presionar debe sentirse. 120ms es el techo para que la respuesta parezca
    instantánea. */
 .press {
@@ -128,6 +139,10 @@ body {
   }
   .lift:hover {
     transform: none;
+  }
+  .drawer-panel {
+    transform: none !important;
+    transition-property: opacity;
   }
   *,
   *::before,

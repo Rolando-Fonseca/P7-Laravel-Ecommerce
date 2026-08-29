@@ -2,6 +2,7 @@ import { products } from "@/lib/catalog";
 import { priceRange, price } from "@/lib/format";
 import { inkOn } from "@/lib/color";
 import { Reveal } from "./reveal";
+import { AddToCartButton } from "./cart/add-to-cart-button";
 
 /**
  * Los ocho productos del seeder, con sus precios reales en centavos, sus tallas
@@ -93,14 +94,27 @@ export function ProductGrid() {
                           </span>
                         </span>
 
-                        <button
-                          type="button"
+                        <AddToCartButton
                           disabled={agotado}
-                          aria-label={`Añadir ${p.name} al carrito`}
-                          className="press inline-flex min-h-11 shrink-0 items-center rounded-full bg-nogal px-5 text-fluid-xs font-medium text-background hover:bg-ink disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
-                        >
-                          {agotado ? "Sin stock" : "Añadir"}
-                        </button>
+                          label={agotado ? "Sin stock" : "Añadir"}
+                          line={{
+                            sku: p.sample_variant?.sku ?? p.slug,
+                            productSlug: p.slug,
+                            productName: p.name,
+                            variantLabel: p.sample_variant
+                              ? `${p.sample_variant.color.name} / ${p.sample_variant.size}`
+                              : "Variante única",
+                            colorHex: p.sample_variant?.color.hex ?? null,
+                            unitPriceCents:
+                              p.sample_variant?.price_cents ??
+                              p.base_price_cents,
+                            // El stock de ESTA variante, no el del producto
+                            // entero: la linea del carrito es de un SKU
+                            // concreto y sumar las 10 variantes daria un aviso
+                            // de stock que nunca salta.
+                            available: p.sample_variant?.available ?? 0,
+                          }}
+                        />
                       </div>
                     </div>
                   </article>
