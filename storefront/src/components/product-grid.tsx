@@ -1,6 +1,6 @@
 import { products } from "@/lib/catalog";
 import { priceRange, price } from "@/lib/format";
-import { inkOn } from "@/lib/color";
+import { Garment, garmentBySlug, type GarmentKind } from "./garment";
 import { Reveal } from "./reveal";
 import { AddToCartButton } from "./cart/add-to-cart-button";
 
@@ -30,20 +30,22 @@ export function ProductGrid() {
         <ul className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p, i) => {
             const agotado = !p.in_stock;
-            const tono = inkOn(p.sample_variant?.color.hex);
+            const prenda = (garmentBySlug[p.slug] ?? "tee") as GarmentKind;
 
             return (
               <li key={p.slug}>
                 <Reveal delay={(i % 3) * 0.05}>
                   <article className="lift group flex h-full flex-col overflow-hidden rounded-sm border border-line bg-background">
-                    <div
-                      className="relative aspect-4/5 w-full"
-                      style={{
-                        backgroundColor:
-                          p.sample_variant?.color.hex ?? "#c9b79a",
-                      }}
-                    >
+                    {/* El fondo es neutro y la prenda lleva el color de la
+                        variante: al reves, un color plano sobre otro igual no
+                        deja ver nada. */}
+                    <div className="relative aspect-4/5 w-full bg-surface">
                       <div className="grain absolute inset-0" aria-hidden />
+                      <Garment
+                        kind={prenda}
+                        color={p.sample_variant?.color.hex ?? null}
+                        className="absolute inset-0 h-full w-full p-7"
+                      />
                       <span className="absolute left-4 top-4 rounded-full bg-background/85 px-3 py-1 text-fluid-xs uppercase tracking-[0.16em] text-ink">
                         {p.category.name}
                       </span>
@@ -53,9 +55,7 @@ export function ProductGrid() {
                         </span>
                       )}
                       {p.sample_variant && (
-                        <span
-                          className={`tabular absolute bottom-4 left-4 text-[10px] uppercase tracking-[0.14em] ${tono.soft}`}
-                        >
+                        <span className="tabular absolute bottom-4 left-4 text-[10px] uppercase tracking-[0.14em] text-muted">
                           {p.sample_variant.sku}
                         </span>
                       )}
