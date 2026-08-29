@@ -103,6 +103,39 @@ en el almacén, la unidad existe: está reservada, no vendida.
 
 ---
 
+## El escaparate
+
+`storefront/` es una landing en Next.js 16 que enseña el catálogo. No es un cliente
+de la API en vivo: **Vercel no ejecuta PHP**, así que el catálogo se exporta a un JSON
+estático desde la misma base de datos que sirve la API.
+
+```bash
+php artisan catalog:export        # genera storefront/src/data/catalog.json
+cd storefront && npm install && npm run dev
+```
+
+La alternativa era escribir datos de mentira en el frontend, y entonces el escaparate
+dejaría de demostrar nada sobre el backend. Los precios, las tallas, los SKU y las
+existencias que se ven son los del seeder, calculados con los mismos accesores que usa
+`GET /api/v1/products`.
+
+Los bloques de color tampoco son fotos de banco: son los `color_hex` reales de cada
+variante. El color del texto encima se decide por luminancia relativa, porque el
+catálogo tiene "Blanco hueso" y "Negro" y un color fijo sería ilegible en uno de los dos.
+
+### Desplegar en Vercel
+
+Importa el repositorio en [vercel.com/new](https://vercel.com/new) y cambia una sola
+cosa: **Root Directory → `storefront`**. Todo lo demás se detecta solo.
+
+| Ajuste | Valor |
+|---|---|
+| Framework | Next.js (automático) |
+| Root Directory | `storefront` |
+| Build Command | `npm run build` (automático) |
+
+---
+
 ## Alcance del MVP
 
 | Dentro | Fuera, y con su ADR |
@@ -124,6 +157,7 @@ en el almacén, la unidad existe: está reservada, no vendida.
 | Tablas | 12 |
 | Tests | 80 en verde, 340 aserciones |
 | Cobertura de lineas | **94.4%** global, `app/Domain/` por encima del 90% (umbral: 70% / 85%) |
+| Escaparate | Next.js 16, contraste AA verificado, sin desbordamiento a 375px |
 
 ---
 
