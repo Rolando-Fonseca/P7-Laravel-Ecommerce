@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   NOGAL — sistema de diseño
+
+   Paleta en OKLCH, no HSL: OKLCH es perceptualmente uniforme, así que bajar la
+   luminosidad de un marrón da el mismo salto visual que bajarla en un beige.
+
+   Tonos tierra sobre el eje de matiz 50–80 (madera de nogal, cuero, arena).
+   Nada de negro puro ni blanco puro: el fondo es lino y el texto es tinta
+   cálida, que es como se ve la ropa en una tienda real.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --lino:         oklch(96.5% 0.009 78);
+  --arena:        oklch(93.2% 0.016 74);
+  --arena-honda:  oklch(88.0% 0.022 70);
+  --tinta:        oklch(22.0% 0.022 58);
+  --tinta-honda:  oklch(16.5% 0.020 55);
+  --apagado:      oklch(47.0% 0.021 64);
+  --nogal:        oklch(37.0% 0.058 52);
+  --nogal-claro:  oklch(52.0% 0.062 55);
+  --caramelo:     oklch(64.0% 0.098 62);
+  --linea:        oklch(85.5% 0.016 72);
+  --linea-tenue:  oklch(90.5% 0.012 74);
+}
+
+/* @theme inline es lo que convierte una custom property en clase de utilidad.
+   Un --color-* declarado en :root a secas no genera nada y bg-nogal no existe:
+   la clase se escribe, no falla, y no hace absolutamente nada. */
+@theme inline {
+  --color-background:  var(--lino);
+  --color-foreground:  var(--tinta);
+  --color-surface:     var(--arena);
+  --color-surface-2:   var(--arena-honda);
+  --color-ink:         var(--tinta-honda);
+  --color-muted:       var(--apagado);
+  --color-nogal:       var(--nogal);
+  --color-nogal-light: var(--nogal-claro);
+  --color-caramel:     var(--caramelo);
+  --color-line:        var(--linea);
+  --color-line-soft:   var(--linea-tenue);
+
+  --font-heading: var(--font-fraunces);
+  --font-body:    var(--font-manrope);
+}
+
+/* Valores estáticos: clamp() y curvas. No cambian en tiempo de ejecución, así
+   que van en @theme a secas. */
+@theme {
+  --text-fluid-xs:   clamp(0.75rem, 0.72rem + 0.15vw, 0.8125rem);
+  --text-fluid-sm:   clamp(0.875rem, 0.80rem + 0.35vw, 1rem);
+  --text-fluid-base: clamp(1rem, 0.90rem + 0.50vw, 1.125rem);
+  --text-fluid-lg:   clamp(1.25rem, 1.00rem + 1.25vw, 1.75rem);
+  --text-fluid-xl:   clamp(1.75rem, 1.20rem + 2.75vw, 3rem);
+  --text-fluid-2xl:  clamp(2.5rem, 1.60rem + 4.20vw, 5rem);
+
+  --spacing-section: clamp(4rem, 2.5rem + 6vw, 8rem);
+
+  /* Una sola curva de salida para todo. Nunca ease-in: una entrada que arranca
+     lenta y termina rápida se siente como un tirón. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* create-next-app deja Arial cableado en el body. Arial es fuente prohibida y
+   además pisaría a Manrope sin que nada avise. */
+body {
+  background-color: var(--lino);
+  color: var(--tinta);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--caramelo);
+  color: var(--tinta-honda);
+}
+
+/* Cifras alineadas verticalmente en precios y estadísticas. Sin esto, una
+   columna de precios baila. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Grano de papel. Da textura a los fondos planos sin cargar una imagen. */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Presionar debe sentirse. 120ms es el techo para que la respuesta parezca
+   instantánea. */
+.press {
+  transition: transform 120ms var(--ease-out), background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out), border-color 160ms var(--ease-out);
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+/* El hover solo existe donde hay un puntero fino. En táctil, :hover se queda
+   pegado después de tocar. */
+@media (hover: hover) and (pointer: fine) {
+  .lift {
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+  }
+  .lift:hover {
+    transform: translateY(-4px);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--nogal);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Más suave, no ausente: se conserva la opacidad y el color, se quita el
+   desplazamiento. Poner todo a 0s deja la interfaz muerta. */
+@media (prefers-reduced-motion: reduce) {
+  .press:active {
+    transform: none;
+  }
+  .lift:hover {
+    transform: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
