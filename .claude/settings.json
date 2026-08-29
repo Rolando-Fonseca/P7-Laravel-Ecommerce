@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "env": {
+    "APP_ENV": "local",
+    "P7_COBERTURA_MINIMA": "70",
+    "P7_API_VERSION": "v1"
+  },
+
+  "permissions": {
+    "defaultMode": "acceptEdits",
+
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(php -l:*)",
+      "Bash(composer require:*)",
+      "Bash(composer install:*)",
+      "Bash(composer dump-autoload:*)",
+      "Bash(vendor/bin/pint:*)",
+      "Bash(vendor/bin/phpunit:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git branch:*)",
+      "Read(./docs/**)",
+      "Read(./app/**)",
+      "Read(./database/**)",
+      "Read(./routes/**)",
+      "Read(./tests/**)",
+      "Edit(./docs/**)",
+      "Edit(./app/**)",
+      "Edit(./database/**)",
+      "Edit(./routes/**)",
+      "Edit(./tests/**)"
+    ],
+
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git merge:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh repo create:*)",
+      "Bash(php artisan migrate:fresh:*)",
+      "Bash(php artisan db:wipe:*)"
+    ],
+
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git rebase:*)",
+      "Bash(rm -rf:*)",
+      "Bash(php artisan migrate:rollback:*)",
+      "Read(./.env)",
+      "Read(./storage/**)",
+      "Edit(./.env)",
+      "Edit(./vendor/**)",
+      "Edit(./composer.lock)"
+    ]
+  },
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "vendor/bin/pint --dirty --quiet",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Recordatorio P7: si cambiaste un contrato en docs/api/contracts/, actualiza docs/CHANGELOG.md y el test de contrato correspondiente antes de commitear.'"
+          }
+        ]
+      }
+    ]
+  }
+}
