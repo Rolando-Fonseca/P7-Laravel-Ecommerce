@@ -74,7 +74,7 @@ cerrada.
 - [x] `php artisan test` en verde
 - [ ] Cobertura verificada — **bloqueado**: la maquina de desarrollo no tiene Xdebug ni PCOV.
       `php artisan test --coverage` no puede ejecutarse. Se mide en CI.
-- [ ] Rama y PR preparados
+- [x] Rama `feat/p7-ecommerce-mvp` con 9 commits atomicos y cuerpo del PR en `docs/PULL_REQUEST.md`
 - [ ] Push (fuera de clase, requiere aprobación)
 
 ## Pendiente explícito — trabajo posterior a la sesión
