@@ -1,0 +1,772 @@
+openapi: 3.1.0
+
+info:
+  title: Nogal — Products & Inventory API
+  version: 1.0.0
+  description: |
+    Backend de ecommerce de ropa masculina. Laravel 12, API REST.
+
+    La especificación en prosa vive en `docs/api/contracts/`. Este archivo es la
+    misma especificación en formato formal. Si divergen, manda `00-convenciones.md`
+    y hay que corregir este archivo.
+
+    Reglas transversales:
+    - Todo importe es entero en centavos, con `currency` ISO-4217 aparte.
+    - Toda respuesta 4xx/5xx usa el esquema `Error`.
+    - Toda respuesta lleva el header `X-Trace-Id`.
+    - Un parámetro de consulta desconocido devuelve 422, no se ignora.
+
+servers:
+  - url: https://api.nogal.store/api/v1
+    description: Producción
+  - url: http://localhost:8000/api/v1
+    description: Local
+
+tags:
+  - name: Catálogo
+  - name: Inventario
+  - name: Carrito
+  - name: Pedidos
+  - name: Administración
+
+security: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Token de Laravel Sanctum. La zona admin exige la habilidad `admin`.
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 10000, default: 1 }
+    PerPage:
+      name: per_page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: ULID o UUID v4 generado por el cliente. Ver ADR-0004.
+      schema: { type: string, maxLength: 64 }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, details, traceId]
+          properties:
+            code:
+              type: string
+              description: Estable entre versiones. Es lo que el cliente compara.
+              examples: [INSUFFICIENT_STOCK]
+            message:
+              type: string
+              description: Legible por humanos. PUEDE cambiar sin aviso; no lo uses en un if.
+            details:
+              type: array
+              description: Siempre un array, nunca null y nunca un objeto.
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  issue: { type: string }
+                  meta: { type: object, additionalProperties: true }
+            traceId:
+              type: string
+              description: ULID. Coincide con el header X-Trace-Id.
+
+    Meta:
+      type: object
+      required: [page, per_page, total, total_pages]
+      properties:
+        page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }
+
+    Links:
+      type: object
+      required: [self, first, prev, next, last]
+      description: prev y next son null en los extremos; nunca se omiten.
+      properties:
+        self: { type: string }
+        first: { type: string }
+        prev: { type: [string, "null"] }
+        next: { type: [string, "null"] }
+        last: { type: string }
+
+    Totals:
+      type: object
+      required: [subtotal_cents, discount_cents, shipping_cents, tax_cents, total_cents]
+      description: ADR-0008. Los tres intermedios valen siempre 0 en el MVP.
+      properties:
+        subtotal_cents: { type: integer }
+        discount_cents: { type: integer, default: 0 }
+        shipping_cents: { type: integer, default: 0 }
+        tax_cents: { type: integer, default: 0 }
+        total_cents: { type: integer }
+
+    Color:
+      type: object
+      properties:
+        name: { type: string, examples: ["Azul cielo"] }
+        hex: { type: [string, "null"], examples: ["#A8C5DA"] }
+
+    Category:
+      type: object
+      properties:
+        slug: { type: string, examples: [camisas] }
+        name: { type: string, examples: [Camisas] }
+        size_system: { type: string, enum: [alpha, waist, eu_shoe, unica] }
+        product_count: { type: integer }
+
+    ProductListItem:
+      type: object
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        summary: { type: [string, "null"] }
+        category: { $ref: '#/components/schemas/Category' }
+        material: { type: [string, "null"] }
+        base_price_cents: { type: integer }
+        currency: { type: string, examples: [COP] }
+        price_range_cents:
+          type: object
+          properties:
+            min: { type: integer }
+            max: { type: integer }
+        primary_image:
+          type: [object, "null"]
+          properties:
+            url: { type: string }
+            alt: { type: string }
+        available_sizes: { type: array, items: { type: string } }
+        available_colors: { type: array, items: { $ref: '#/components/schemas/Color' } }
+        in_stock: { type: boolean }
+        variant_count: { type: integer }
+        created_at: { type: string, format: date-time }
+
+    Variant:
+      type: object
+      properties:
+        sku: { type: string, examples: [NGL-CAM-OXF-AZC-M] }
+        size: { type: string }
+        color: { $ref: '#/components/schemas/Color' }
+        price_cents:
+          type: integer
+          description: Ya resuelto. Si la variante no tiene precio propio, aquí viene el del producto.
+        status: { type: string, enum: [active, archived] }
+        available: { type: integer }
+
+    ProductDetail:
+      type: object
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        description: { type: [string, "null"] }
+        category: { $ref: '#/components/schemas/Category' }
+        material: { type: [string, "null"] }
+        care_instructions: { type: [string, "null"] }
+        base_price_cents: { type: integer }
+        currency: { type: string }
+        size_system: { type: string, enum: [alpha, waist, eu_shoe, unica] }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              url: { type: string }
+              alt: { type: string }
+              position: { type: integer }
+        variants: { type: array, items: { $ref: '#/components/schemas/Variant' } }
+
+    CartItem:
+      type: object
+      properties:
+        id: { type: integer }
+        sku: { type: string }
+        product:
+          type: object
+          properties:
+            slug: { type: string }
+            name: { type: string }
+        variant_label: { type: string, examples: ["Azul cielo / M"] }
+        image_url: { type: [string, "null"] }
+        quantity: { type: integer, minimum: 1, maximum: 20 }
+        unit_price_cents:
+          type: integer
+          description: Congelado al añadir. No se recalcula al consultar.
+        line_total_cents: { type: integer }
+        available:
+          type: integer
+          description: Informativo. El carrito no reserva stock (ADR-0005).
+        has_enough_stock: { type: boolean }
+
+    Cart:
+      type: object
+      properties:
+        token: { type: string, format: uuid }
+        status: { type: string, enum: [open, converted, abandoned] }
+        currency: { type: string }
+        items: { type: array, items: { $ref: '#/components/schemas/CartItem' } }
+        totals: { $ref: '#/components/schemas/Totals' }
+        item_count:
+          type: integer
+          description: Suma de cantidades, no número de líneas.
+        expires_at: { type: string, format: date-time }
+
+    Address:
+      type: object
+      required: [full_name, phone, line1, city, state, country]
+      properties:
+        full_name: { type: string, minLength: 3, maxLength: 120 }
+        phone: { type: string, minLength: 7, maxLength: 20 }
+        line1: { type: string, minLength: 5, maxLength: 180 }
+        line2: { type: [string, "null"], maxLength: 180 }
+        city: { type: string, minLength: 2, maxLength: 80 }
+        state: { type: string, minLength: 2, maxLength: 80 }
+        postal_code: { type: [string, "null"], maxLength: 20 }
+        country: { type: string, enum: [CO], description: En el MVP solo Colombia. }
+
+    OrderItem:
+      type: object
+      description: Copia histórica en texto. Renombrar el producto no cambia el pedido.
+      properties:
+        sku: { type: string }
+        product_name: { type: string }
+        variant_label: { type: string }
+        quantity: { type: integer }
+        unit_price_cents: { type: integer }
+        line_total_cents: { type: integer }
+
+    Order:
+      type: object
+      properties:
+        number: { type: string, pattern: '^NGL-\d{4}-\d{6}$', examples: [NGL-2026-000123] }
+        status: { type: string, enum: [created, paid, packed, shipped, cancelled, returned] }
+        currency: { type: string }
+        email: { type: string, format: email }
+        items: { type: array, items: { $ref: '#/components/schemas/OrderItem' } }
+        totals: { $ref: '#/components/schemas/Totals' }
+        shipping_address: { $ref: '#/components/schemas/Address' }
+        billing_address: { type: [object, "null"] }
+        notes: { type: [string, "null"] }
+        allowed_transitions:
+          type: array
+          items: { type: string }
+          description: Sale de la tabla del dominio. Evita que el cliente mantenga su propia copia.
+        status_history:
+          type: array
+          items:
+            type: object
+            properties:
+              status: { type: string }
+              at: { type: string, format: date-time }
+              by: { type: [string, "null"] }
+              reason: { type: [string, "null"] }
+        placed_at: { type: string, format: date-time }
+
+    Movement:
+      type: object
+      properties:
+        movement_id: { type: string, description: ULID }
+        sku: { type: string }
+        warehouse_code: { type: string }
+        type: { type: string, enum: [adjustment, reservation, release, sale, return] }
+        quantity_delta: { type: integer }
+        reason: { type: string }
+        reference:
+          type: [object, "null"]
+          properties:
+            type: { type: string }
+            id: { type: string }
+        created_by:
+          type: [object, "null"]
+          description: null cuando el movimiento lo generó el sistema.
+        created_at: { type: string, format: date-time }
+
+  responses:
+    ValidationFailed:
+      description: 422 VALIDATION_FAILED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: 404 RESOURCE_NOT_FOUND
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthenticated:
+      description: 401 UNAUTHENTICATED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: 403 FORBIDDEN
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: 409. Conflicto con el estado actual del servidor.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Gone:
+      description: 410 CART_EXPIRED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: 429 RATE_LIMITED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+paths:
+
+  /categories:
+    get:
+      tags: [Catálogo]
+      summary: Árbol de categorías
+      description: Sin paginación. Son menos de 20 filas y siempre se piden todas.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Category' } }
+
+  /products:
+    get:
+      tags: [Catálogo]
+      summary: Listar productos
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+        - { name: category, in: query, schema: { type: string } }
+        - { name: size, in: query, description: "Lista separada por comas: M,L,XL", schema: { type: string } }
+        - { name: color, in: query, description: Lista separada por comas, schema: { type: string } }
+        - { name: price_min, in: query, schema: { type: integer, minimum: 0 } }
+        - { name: price_max, in: query, schema: { type: integer, minimum: 0 } }
+        - { name: q, in: query, schema: { type: string, minLength: 2, maxLength: 80 } }
+        - { name: in_stock, in: query, schema: { type: string, enum: ['true', 'false'] } }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [name, -name, price, -price, created_at, -created_at], default: -created_at }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/ProductListItem' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+                  links: { $ref: '#/components/schemas/Links' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /products/{slug}:
+    get:
+      tags: [Catálogo]
+      summary: Detalle de producto con todas sus variantes
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ProductDetail' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /products/{slug}/variants/{sku}:
+    get:
+      tags: [Catálogo]
+      summary: Variante con su desglose de stock por almacén
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+        - { name: sku, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /inventory/{sku}:
+    get:
+      tags: [Inventario]
+      summary: Stock disponible de una variante
+      description: |
+        No expone `quantity_on_hand` ni `quantity_reserved`. Esas cantidades revelan
+        volumen de ventas en curso, que es información comercial.
+      parameters:
+        - { name: sku, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      sku: { type: string }
+                      available: { type: integer }
+                      in_stock: { type: boolean }
+                      by_warehouse:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            warehouse_code: { type: string }
+                            available: { type: integer }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /inventory/availability:
+    post:
+      tags: [Inventario]
+      summary: Disponibilidad en lote
+      description: Un sku inexistente devuelve `available: null`, no 404.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [skus]
+              properties:
+                skus:
+                  type: array
+                  minItems: 1
+                  maxItems: 50
+                  items: { type: string }
+      responses:
+        '200': { description: OK }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /carts:
+    post:
+      tags: [Carrito]
+      summary: Crear carrito
+      description: |
+        `currency` no se acepta del cliente: es siempre COP y lo decide el servidor.
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location: { schema: { type: string } }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Cart' }
+
+  /carts/{token}:
+    get:
+      tags: [Carrito]
+      summary: Consultar carrito
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Cart' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410': { $ref: '#/components/responses/Gone' }
+    delete:
+      tags: [Carrito]
+      summary: Vaciar carrito
+      description: No borra el carrito; sigue siendo el mismo token.
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: OK }
+
+  /carts/{token}/items:
+    post:
+      tags: [Carrito]
+      summary: Añadir variante
+      description: |
+        Si la variante ya está en el carrito, SUMA cantidad.
+        Devuelve 200 y no 201: el recurso devuelto es el carrito, que ya existía.
+        NO valida stock (ADR-0005).
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku, quantity]
+              properties:
+                sku: { type: string }
+                quantity: { type: integer, minimum: 1, maximum: 20 }
+      responses:
+        '200': { description: Carrito completo }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /carts/{token}/items/{itemId}:
+    patch:
+      tags: [Carrito]
+      summary: Fijar cantidad de una línea
+      description: Reemplaza, no suma. Para eliminar existe DELETE.
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+        - { name: itemId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity: { type: integer, minimum: 1, maximum: 20 }
+      responses:
+        '200': { description: Carrito completo }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Carrito]
+      summary: Quitar línea
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+        - { name: itemId, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Carrito completo, con los totales recalculados }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /orders:
+    post:
+      tags: [Pedidos]
+      summary: Crear pedido a partir de un carrito
+      description: |
+        La operación crítica del backend. Todo ocurre en una transacción: si una
+        línea no tiene stock, no se crea nada. No hay pedidos parciales.
+
+        Exige `Idempotency-Key` (ADR-0004). Repetir con la misma clave y el mismo
+        cuerpo devuelve el mismo pedido con `Idempotency-Replayed: true` y NO
+        reserva stock por segunda vez.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cart_token, email, shipping_address]
+              properties:
+                cart_token: { type: string, format: uuid }
+                email: { type: string, format: email }
+                shipping_address: { $ref: '#/components/schemas/Address' }
+                billing_address:
+                  type: [object, "null"]
+                  description: null significa "igual que el envío".
+                notes: { type: [string, "null"], maxLength: 500 }
+      responses:
+        '201':
+          description: Creado
+          headers:
+            Location: { schema: { type: string } }
+            Idempotency-Replayed: { schema: { type: string }, description: Presente solo en repeticiones. }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Order' }
+        '400':
+          description: 400 IDEMPOTENCY_KEY_REQUIRED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: |
+            409 INSUFFICIENT_STOCK, CART_NOT_MODIFIABLE, VARIANT_UNAVAILABLE o
+            IDEMPOTENCY_KEY_REUSED. En INSUFFICIENT_STOCK, `details` lista TODAS
+            las líneas que fallan, no solo la primera.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    get:
+      tags: [Pedidos]
+      summary: Historial del usuario autenticado
+      description: Resumen sin líneas ni direcciones. El detalle se pide por número.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+        - { name: status, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: sort, in: query, schema: { type: string, enum: [created_at, -created_at, total, -total] } }
+      responses:
+        '200': { description: OK }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /orders/{number}:
+    get:
+      tags: [Pedidos]
+      summary: Consultar pedido
+      description: |
+        Un invitado consulta con `?email=`. Un email que no coincide devuelve 404 y
+        no 403: un 403 confirmaría que el pedido existe y convertiría el endpoint en
+        un oráculo para adivinar números de pedido.
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: string } }
+        - { name: email, in: query, schema: { type: string, format: email } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Order' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /admin/inventory/adjustments:
+    post:
+      tags: [Administración, Inventario]
+      summary: Ajuste manual de stock
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku, warehouse_code, quantity_delta, reason]
+              properties:
+                sku: { type: string }
+                warehouse_code: { type: string }
+                quantity_delta:
+                  type: integer
+                  minimum: -10000
+                  maximum: 10000
+                  description: No puede ser 0. Un ajuste que no ajusta nada es un error del cliente.
+                reason:
+                  type: string
+                  minLength: 5
+                  maxLength: 255
+                  description: Obligatorio. Un ajuste sin motivo es un descuadre inauditable.
+      responses:
+        '201': { description: Creado, con el stock resultante }
+        '400': { description: 400 IDEMPOTENCY_KEY_REQUIRED }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: 409 INSUFFICIENT_STOCK si el delta negativo dejaría on_hand por debajo de reserved.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+
+  /admin/inventory/movements:
+    get:
+      tags: [Administración, Inventario]
+      summary: Libro mayor de inventario
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+        - { name: sku, in: query, schema: { type: string } }
+        - { name: warehouse_code, in: query, schema: { type: string } }
+        - { name: type, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Movement' } }
+                  meta: { $ref: '#/components/schemas/Meta' }
+                  links: { $ref: '#/components/schemas/Links' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /admin/orders/{number}/transitions:
+    post:
+      tags: [Administración, Pedidos]
+      summary: Cambiar el estado de un pedido
+      description: |
+        Un solo endpoint para las cinco transiciones. Cinco rutas serían cinco
+        sitios donde olvidar validar la transición.
+
+        Cada transición dispara su efecto sobre el inventario en la misma
+        transacción que el cambio de estado.
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: number, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [to]
+              properties:
+                to: { type: string, enum: [paid, packed, shipped, cancelled, returned] }
+                reason:
+                  type: [string, "null"]
+                  maxLength: 255
+                  description: Obligatorio cuando `to` es cancelled o returned.
+      responses:
+        '200': { description: Pedido con su nuevo estado }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: |
+            409 INVALID_STATE_TRANSITION. El error incluye `allowed_transitions`
+            para que el cliente sepa qué sí puede hacer.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
