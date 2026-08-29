@@ -1,0 +1,419 @@
+{
+    "generated_from": "GET /api/v1/products + GET /api/v1/products/{slug}",
+    "currency": "COP",
+    "categories": [
+        {
+            "slug": "camisas",
+            "name": "Camisas",
+            "size_system": "alpha",
+            "product_count": 2
+        },
+        {
+            "slug": "camisetas",
+            "name": "Camisetas",
+            "size_system": "alpha",
+            "product_count": 1
+        },
+        {
+            "slug": "pantalones",
+            "name": "Pantalones",
+            "size_system": "waist",
+            "product_count": 2
+        },
+        {
+            "slug": "chaquetas",
+            "name": "Chaquetas",
+            "size_system": "alpha",
+            "product_count": 1
+        },
+        {
+            "slug": "calzado",
+            "name": "Calzado",
+            "size_system": "eu_shoe",
+            "product_count": 1
+        },
+        {
+            "slug": "accesorios",
+            "name": "Accesorios",
+            "size_system": "unica",
+            "product_count": 1
+        }
+    ],
+    "products": [
+        {
+            "slug": "camisa-oxford-manga-larga",
+            "name": "Camisa Oxford Manga Larga",
+            "summary": "Algodon peinado, cuello con botones, corte regular.",
+            "description": "Tejido Oxford de algodon peinado de 140 g/m2. Cuello con botones, canesu posterior con pliegue central y punos ajustables de dos posiciones. Se plancha facil y aguanta lavados.",
+            "material": "100% algodon peinado",
+            "care_instructions": "Lavar a maquina en frio. No usar blanqueador. Planchar a temperatura media.",
+            "category": {
+                "slug": "camisas",
+                "name": "Camisas"
+            },
+            "base_price_cents": 1890000,
+            "price_range_cents": {
+                "min": 1890000,
+                "max": 2090000
+            },
+            "available_sizes": [
+                "S",
+                "M",
+                "L",
+                "XL",
+                "XXL"
+            ],
+            "available_colors": [
+                {
+                    "name": "Azul cielo",
+                    "hex": "#A8C5DA"
+                },
+                {
+                    "name": "Blanco hueso",
+                    "hex": "#F2EFE9"
+                },
+                {
+                    "name": "Rayado azul",
+                    "hex": "#7B9BB5"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 15,
+            "total_available": 73,
+            "sample_variant": {
+                "sku": "NGL-CAM-OXF-AZC-S",
+                "size": "S",
+                "color": {
+                    "name": "Azul cielo",
+                    "hex": "#A8C5DA"
+                },
+                "price_cents": 1890000,
+                "available": 2
+            }
+        },
+        {
+            "slug": "camisa-lino-cuello-mao",
+            "name": "Camisa de Lino Cuello Mao",
+            "summary": "Lino lavado, sin cuello clasico, para clima calido.",
+            "description": "Lino europeo lavado a la piedra. Cuello mao, sin entretela, caida suelta. Se arruga: es lino y asi debe verse.",
+            "material": "100% lino",
+            "care_instructions": "Lavar a mano o ciclo delicado. Secar a la sombra.",
+            "category": {
+                "slug": "camisas",
+                "name": "Camisas"
+            },
+            "base_price_cents": 2340000,
+            "price_range_cents": {
+                "min": 2340000,
+                "max": 2540000
+            },
+            "available_sizes": [
+                "S",
+                "M",
+                "L",
+                "XL",
+                "XXL"
+            ],
+            "available_colors": [
+                {
+                    "name": "Arena",
+                    "hex": "#D6C7AE"
+                },
+                {
+                    "name": "Verde oliva",
+                    "hex": "#6B7355"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 10,
+            "total_available": 57,
+            "sample_variant": {
+                "sku": "NGL-CAM-LIN-ARE-S",
+                "size": "S",
+                "color": {
+                    "name": "Arena",
+                    "hex": "#D6C7AE"
+                },
+                "price_cents": 2340000,
+                "available": 1
+            }
+        },
+        {
+            "slug": "camiseta-cuello-redondo-peso-pesado",
+            "name": "Camiseta Cuello Redondo Peso Pesado",
+            "summary": "Jersey de 240 g/m2. No se transparenta ni se deforma.",
+            "description": "Jersey de algodon de 240 g/m2 con cuello reforzado en costilla y costuras laterales. Encoge menos de un 3% en el primer lavado.",
+            "material": "100% algodon",
+            "care_instructions": "Lavar del reves en frio. No secar en secadora.",
+            "category": {
+                "slug": "camisetas",
+                "name": "Camisetas"
+            },
+            "base_price_cents": 890000,
+            "price_range_cents": {
+                "min": 890000,
+                "max": 1090000
+            },
+            "available_sizes": [
+                "S",
+                "M",
+                "L",
+                "XL",
+                "XXL"
+            ],
+            "available_colors": [
+                {
+                    "name": "Negro",
+                    "hex": "#1C1C1C"
+                },
+                {
+                    "name": "Blanco",
+                    "hex": "#FAFAFA"
+                },
+                {
+                    "name": "Gris jaspeado",
+                    "hex": "#9A9A93"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 15,
+            "total_available": 119,
+            "sample_variant": {
+                "sku": "NGL-CMT-PES-NEG-S",
+                "size": "S",
+                "color": {
+                    "name": "Negro",
+                    "hex": "#1C1C1C"
+                },
+                "price_cents": 890000,
+                "available": 7
+            }
+        },
+        {
+            "slug": "pantalon-chino-slim",
+            "name": "Pantalon Chino Slim",
+            "summary": "Sarga de algodon con elastano. Corte ajustado sin apretar.",
+            "description": "Sarga de algodon con 2% de elastano. Corte slim con entrepierna de 78 cm, dos bolsillos frontales inclinados y dos traseros con boton.",
+            "material": "98% algodon, 2% elastano",
+            "care_instructions": "Lavar a maquina en frio. Planchar del reves.",
+            "category": {
+                "slug": "pantalones",
+                "name": "Pantalones"
+            },
+            "base_price_cents": 2150000,
+            "price_range_cents": {
+                "min": 2150000,
+                "max": 2150000
+            },
+            "available_sizes": [
+                "30",
+                "32",
+                "34",
+                "36",
+                "38"
+            ],
+            "available_colors": [
+                {
+                    "name": "Beige arena",
+                    "hex": "#C8B89A"
+                },
+                {
+                    "name": "Azul marino",
+                    "hex": "#2C3E50"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 10,
+            "total_available": 65,
+            "sample_variant": {
+                "sku": "NGL-PAN-CHI-BEI-30",
+                "size": "30",
+                "color": {
+                    "name": "Beige arena",
+                    "hex": "#C8B89A"
+                },
+                "price_cents": 2150000,
+                "available": 12
+            }
+        },
+        {
+            "slug": "jean-recto-14oz",
+            "name": "Jean Recto 14 oz",
+            "summary": "Mezclilla rigida de 14 onzas. Se amolda con el uso.",
+            "description": "Mezclilla rigida de 14 onzas tejida en telar de proyectil. Corte recto desde la rodilla, remaches de cobre y cinturilla reforzada. Los primeros usos son duros; a las tres semanas es otro pantalon.",
+            "material": "100% algodon",
+            "care_instructions": "Primer lavado a mano en frio. Lavar poco.",
+            "category": {
+                "slug": "pantalones",
+                "name": "Pantalones"
+            },
+            "base_price_cents": 2890000,
+            "price_range_cents": {
+                "min": 2890000,
+                "max": 2890000
+            },
+            "available_sizes": [
+                "30",
+                "32",
+                "34",
+                "36",
+                "38"
+            ],
+            "available_colors": [
+                {
+                    "name": "Indigo crudo",
+                    "hex": "#2B3A55"
+                },
+                {
+                    "name": "Negro lavado",
+                    "hex": "#3A3A3A"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 10,
+            "total_available": 72,
+            "sample_variant": {
+                "sku": "NGL-PAN-JEA-IND-30",
+                "size": "30",
+                "color": {
+                    "name": "Indigo crudo",
+                    "hex": "#2B3A55"
+                },
+                "price_cents": 2890000,
+                "available": 8
+            }
+        },
+        {
+            "slug": "chaqueta-trucker-mezclilla",
+            "name": "Chaqueta Trucker de Mezclilla",
+            "summary": "Mezclilla de 12 onzas, corte corto, seis botones.",
+            "description": "Mezclilla de 12 onzas. Corte corte clasico trucker con canesu en V, dos bolsillos de pecho con solapa y ajuste lateral por botones.",
+            "material": "100% algodon",
+            "care_instructions": "Lavar poco y en frio.",
+            "category": {
+                "slug": "chaquetas",
+                "name": "Chaquetas"
+            },
+            "base_price_cents": 3450000,
+            "price_range_cents": {
+                "min": 3450000,
+                "max": 3450000
+            },
+            "available_sizes": [
+                "S",
+                "M",
+                "L",
+                "XL"
+            ],
+            "available_colors": [
+                {
+                    "name": "Indigo medio",
+                    "hex": "#4A6491"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 4,
+            "total_available": 49,
+            "sample_variant": {
+                "sku": "NGL-CHQ-TRK-IND-S",
+                "size": "S",
+                "color": {
+                    "name": "Indigo medio",
+                    "hex": "#4A6491"
+                },
+                "price_cents": 3450000,
+                "available": 14
+            }
+        },
+        {
+            "slug": "bota-chelsea-cuero",
+            "name": "Bota Chelsea de Cuero",
+            "summary": "Cuero vacuno de flor entera, suela de goma cosida.",
+            "description": "Cuero vacuno de flor entera curtido al vegetal, elasticos laterales y tirador trasero. Suela de goma cosida en Blake, resuelable.",
+            "material": "Cuero vacuno flor entera",
+            "care_instructions": "Cepillar y aplicar crema nutritiva cada tres meses.",
+            "category": {
+                "slug": "calzado",
+                "name": "Calzado"
+            },
+            "base_price_cents": 5890000,
+            "price_range_cents": {
+                "min": 5890000,
+                "max": 5890000
+            },
+            "available_sizes": [
+                "40",
+                "41",
+                "42",
+                "43",
+                "44"
+            ],
+            "available_colors": [
+                {
+                    "name": "Marron cuero",
+                    "hex": "#6B4423"
+                },
+                {
+                    "name": "Negro",
+                    "hex": "#1C1C1C"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 10,
+            "total_available": 79,
+            "sample_variant": {
+                "sku": "NGL-CAL-CHE-MAR-40",
+                "size": "40",
+                "color": {
+                    "name": "Marron cuero",
+                    "hex": "#6B4423"
+                },
+                "price_cents": 5890000,
+                "available": 13
+            }
+        },
+        {
+            "slug": "cinturon-cuero-hebilla-laton",
+            "name": "Cinturon de Cuero con Hebilla de Laton",
+            "summary": "Una sola pieza de cuero, 3,5 cm de ancho.",
+            "description": "Cortado de una sola pieza de cuero vacuno de 3,5 mm. Hebilla de laton macizo intercambiable. Se oscurece con el uso.",
+            "material": "Cuero vacuno y laton",
+            "care_instructions": "Limpiar con pano humedo. No sumergir.",
+            "category": {
+                "slug": "accesorios",
+                "name": "Accesorios"
+            },
+            "base_price_cents": 1450000,
+            "price_range_cents": {
+                "min": 1450000,
+                "max": 1450000
+            },
+            "available_sizes": [
+                "U"
+            ],
+            "available_colors": [
+                {
+                    "name": "Marron",
+                    "hex": "#6B4423"
+                },
+                {
+                    "name": "Negro",
+                    "hex": "#1C1C1C"
+                }
+            ],
+            "in_stock": true,
+            "variant_count": 2,
+            "total_available": 7,
+            "sample_variant": {
+                "sku": "NGL-ACC-CIN-MAR-U",
+                "size": "U",
+                "color": {
+                    "name": "Marron",
+                    "hex": "#6B4423"
+                },
+                "price_cents": 1450000,
+                "available": 1
+            }
+        }
+    ]
+}
