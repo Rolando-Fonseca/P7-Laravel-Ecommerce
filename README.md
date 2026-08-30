@@ -119,9 +119,15 @@ dejaría de demostrar nada sobre el backend. Los precios, las tallas, los SKU y 
 existencias que se ven son los del seeder, calculados con los mismos accesores que usa
 `GET /api/v1/products`.
 
-Los bloques de color tampoco son fotos de banco: son los `color_hex` reales de cada
-variante. El color del texto encima se decide por luminancia relativa, porque el
-catálogo tiene "Blanco hueso" y "Negro" y un color fijo sería ilegible en uno de los dos.
+Las fotos de las prendas se generaron con
+[claude-banana](https://github.com/Hainrixz/claude-banana) sobre la API de imagen de
+Gemini, usando un mismo bloque de estilo para las nueve: fondo de lino cálido, luz suave
+desde arriba a la izquierda y una paleta restringida a neutros cálidos más el color de la
+prenda. Esa consistencia es la razón de generarlas en vez de bajarlas de un banco: nueve
+fotos de nueve fotógrafos distintos no casan entre sí en una parrilla.
+
+No son fotos del producto real — es un proyecto académico y no hay inventario físico
+que fotografiar.
 
 ### Desplegar en Vercel
 

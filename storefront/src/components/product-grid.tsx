@@ -1,6 +1,6 @@
 import { products } from "@/lib/catalog";
 import { priceRange, price } from "@/lib/format";
-import { Garment, garmentBySlug, type GarmentKind } from "./garment";
+import Image from "next/image";
 import { Reveal } from "./reveal";
 import { AddToCartButton } from "./cart/add-to-cart-button";
 
@@ -30,21 +30,21 @@ export function ProductGrid() {
         <ul className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p, i) => {
             const agotado = !p.in_stock;
-            const prenda = (garmentBySlug[p.slug] ?? "tee") as GarmentKind;
 
             return (
               <li key={p.slug}>
                 <Reveal delay={(i % 3) * 0.05}>
                   <article className="lift group flex h-full flex-col overflow-hidden rounded-sm border border-line bg-background">
-                    {/* El fondo es neutro y la prenda lleva el color de la
-                        variante: al reves, un color plano sobre otro igual no
-                        deja ver nada. */}
                     <div className="relative aspect-4/5 w-full bg-surface">
-                      <div className="grain absolute inset-0" aria-hidden />
-                      <Garment
-                        kind={prenda}
-                        color={p.sample_variant?.color.hex ?? null}
-                        className="absolute inset-0 h-full w-full p-7"
+                      <Image
+                        src={`/images/${p.slug}.webp`}
+                        alt={`${p.name} en ${p.sample_variant?.color.name ?? "color unico"}, sobre fondo de lino`}
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover"
+                        // Las tres primeras entran en el primer pantallazo:
+                        // marcarlas priority evita que el LCP espere al scroll.
+                        priority={i < 3}
                       />
                       <span className="absolute left-4 top-4 rounded-full bg-background/85 px-3 py-1 text-fluid-xs uppercase tracking-[0.16em] text-ink">
                         {p.category.name}
