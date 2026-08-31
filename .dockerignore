@@ -1,0 +1,14 @@
+.git
+.github
+.claude
+node_modules
+vendor
+storefront
+docs
+tests
+storage/logs/*
+database/database.sqlite
+.env
+.env.*
+!.env.example
+*.md

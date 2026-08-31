@@ -1,0 +1,17 @@
+# Blueprint de Render: "New +" -> "Blueprint" -> conectar este repositorio.
+# Render detecta este archivo y crea el servicio sin mas configuracion.
+#
+# APP_KEY no se declara aqui a proposito: el generateValue de Render produce
+# una cadena aleatoria que no cumple el formato base64:32-bytes que Laravel
+# exige, y romperia el cifrado. docker/start.sh genera una clave valida en el
+# arranque; como la API no cifra nada persistente (los tokens de Sanctum van
+# hasheados, no cifrados), que sea efimera no afecta a nada.
+services:
+  - type: web
+    name: nogal-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /up
+    envVars:
+      - key: APP_URL
+        value: https://nogal-api.onrender.com
