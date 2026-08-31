@@ -8,7 +8,23 @@ consecuencia.
 
 ---
 
-## Arrancar
+## API en vivo
+
+La API Laravel esta desplegada en **https://nogal-api.onrender.com** (Render, capa
+gratuita: la primera peticion tras un rato de inactividad tarda ~30-60 s en despertar
+el servicio; la base se resiembra en cada arranque, asi que el catalogo demo siempre
+esta en su estado canonico).
+
+```bash
+curl -s "https://nogal-api.onrender.com/api/v1/products?per_page=3" -H "Accept: application/json"
+```
+
+La raiz (https://nogal-api.onrender.com) sirve la pagina de bienvenida de Laravel. El
+despliegue esta definido en `Dockerfile` + `render.yaml`.
+
+---
+
+## Arrancar en local
 
 Requisitos: PHP 8.2 o superior y Composer.
 
